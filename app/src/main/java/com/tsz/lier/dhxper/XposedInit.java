@@ -36,15 +36,15 @@ public class XposedInit implements IXposedHookLoadPackage, IXposedHookZygoteInit
 
             return;
         }
-
-        XposedHelpers.findAndHookMethod(Application.class, "attach", Context.class, new XC_MethodHook(XCallback.PRIORITY_HIGHEST * 2) {
-
-            //由于集成了脱壳功能，所以必须选择before了
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                hotLoadPlugin(lpparam.classLoader, (Context) param.args[0], lpparam);
-            }
-        });
+        HotLoadPackageEntry.hookDefineClass(lpparam);
+//        XposedHelpers.findAndHookMethod(Application.class, "attach", Context.class, new XC_MethodHook(XCallback.PRIORITY_HIGHEST * 2) {
+//
+//            //由于集成了脱壳功能，所以必须选择before了
+//            @Override
+//            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+//                hotLoadPlugin(lpparam.classLoader, (Context) param.args[0], lpparam);
+//            }
+//        });
 
     }
     private static final String INSTANT_RUN_CLASS = "com.android.tools.fd.runtime.BootstrapApplication";

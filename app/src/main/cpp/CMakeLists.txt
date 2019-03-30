@@ -1,44 +1,86 @@
-# For more information about using CMake with Android Studio, read the
-# documentation: https://d.android.com/studio/projects/add-native-code.html
-
-# Sets the minimum version of CMake required to build the native library.
-
 cmake_minimum_required(VERSION 3.4.1)
+message("Building ucrackNative for Android(${CMAKE_SYSTEM_PROCESSOR})...")
 
-# Creates and names a library, sets it as either STATIC
-# or SHARED, and provides the relative paths to its source code.
-# You can define multiple libraries, and CMake builds them for you.
-# Gradle automatically packages shared libraries with your APK.
+set(UCRACK_SOURCE
+        src/unpack/init.cpp
+        src/unpack/NativeStackTrace.cpp
+        src/unpack/shell_version1.cpp
+        src/unpack/shell_version3.cpp
+        src/unpack/socrack.cpp
+        )
 
-add_library( # Sets the name of the library.
-        native-lib
+set(INLINE_HOOK_SOURCE
+        src/inlinehook/dlopen.c
+        src/inlinehook/inlineHook.c
+        src/inlinehook/relocate.c
+        )
 
-        # Sets the library as a shared library.
-        SHARED
+set(LIB_DEX_SOURCE
+        src/libdex/CmdUtils.cpp
+        src/libdex/DexCatch.cpp
+        src/libdex/DexClass.cpp
+        src/libdex/DexDataMap.cpp
+        src/libdex/DexDebugInfo.cpp
+        src/libdex/DexFile.cpp
+        src/libdex/DexInlines.cpp
+        src/libdex/DexOptData.cpp
+        src/libdex/DexOpcodes.cpp
+        src/libdex/DexProto.cpp
+        src/libdex/DexSwapVerify.cpp
+        src/libdex/DexUtf.cpp
+        src/libdex/InstrUtils.cpp
+        src/libdex/Leb128.cpp
+        src/libdex/OptInvocation.cpp
+        src/libdex/sha1.cpp
+        src/libdex/SysUtil.cpp
+        src/libdex/ZipArchive.cpp
+        src/libdex/safe_iop.c
+        )
 
-        # Provides a relative path to your source file(s).
-        native-lib.cpp)
+set(LIB_DVM_OO_SOURCE
+        src/oo/AccessCheck.cpp
+        src/oo/Array.cpp
+        src/oo/Class.cpp
+        src/oo/Object.cpp
+        src/oo/Resolve.cpp
+        src/oo/TypeCheck.cpp
+        )
 
-# Searches for a specified prebuilt library and stores the path as a
-# variable. Because CMake includes system libraries in the search path by
-# default, you only need to specify the name of the public NDK library
-# you want to add. CMake verifies that the library exists before
-# completing its build.
+set(LIB_VM
+        src/vm/Hash.cpp
+        )
 
-find_library( # Sets the name of the path variable.
-        log-lib
+set(ZLIB_SOURCE
+        src/zlib/adler32.c
+        src/zlib/compress.c
+        src/zlib/crc32.c
+        src/zlib/deflate.c
+        src/zlib/gzclose.c
+        src/zlib/gzlib.c
+        src/zlib/gzread.c
+        src/zlib/gzwrite.c
+        src/zlib/infback.c
+        src/zlib/inflate.c
+        src/zlib/inftrees.c
+        src/zlib/inffast.c
+        src/zlib/trees.c
+        src/zlib/uncompr.c
+        src/zlib/zutil.c
+        )
 
-        # Specifies the name of the NDK library that
-        # you want CMake to locate.
-        log)
+set(UCRACK_SOURCE ${LIB_VM} ${UCRACK_SOURCE} ${LIB_DEX_SOURCE} ${LIB_DVM_OO_SOURCE} ${ZLIB_SOURCE}
+        ${INLINE_HOOK_SOURCE} )
 
-# Specifies libraries CMake should link to your target library. You
-# can link multiple libraries, such as libraries you define in this
-# build script, prebuilt third-party libraries, or system libraries.
+set(LIBRARY_NAME "unshellnative")
 
-target_link_libraries( # Specifies the target library.
-        native-lib
+include_directories(src)
+include_directories(src/include)
 
-        # Links the target library to the log library
-        # included in the NDK.
-        ${log-lib})
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden -funwind-tables -g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -funwind-tables -g")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -s -Wl,--gc-sections")
+
+add_library(${LIBRARY_NAME} SHARED ${UCRACK_SOURCE})
+
+
+target_link_libraries(${LIBRARY_NAME} log)
